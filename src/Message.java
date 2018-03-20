@@ -31,7 +31,7 @@ public class Message implements Serializable {
 	private String itemID = null;
 	private String taskID = null;
 	private double price = 0;
-
+	private Integer biddingPrice = null;
 	private Integer salePrice = null;
 
 	//
@@ -42,49 +42,58 @@ public class Message implements Serializable {
 	}
 
 	// protocol-specific message constructor - NO_MESSAGE, INFORM_START_OF_AUCTION, INFORM_LOSER
+	//										 - INFORM_REJECT, ACCEPT_PRICE, PROPOSE_BID_ON_PRICE
 	public Message(int messageType, String sender, String receiver, String message) {
 		this.setMessageType(messageType);
 		this.sender = sender;
 		this.receiver = receiver;
 
-		if (message.equals("dutch") || message.equals("english")) {
+		if (messageType == 1) {  //INFORM_START_OF_AUCTION
 			this.auctionType = message;
 		}
-		
-		
-		
-	}
-
-	// protocol-specific message constructor - INFORM_ASKING_PRICE
-	public Message(int messageType, String sender, String receiver, int askingPrice, String itemID) {
-		this.setMessageType(messageType);
-		this.sender = sender;
-		this.receiver = receiver;
-		this.askingPrice = askingPrice;
-		this.itemID = itemID;
+		//INFORM_LOSER, INFORM_REJECT, INFORM_ACCEPT, INFORM_ACCEPT_PRICE, PROPOSE_BID_ON_PRICE
+		else if (messageType == 6 || messageType == 4 || messageType == 3 || messageType == 7 || messageType == 9) {
+			this.itemID = message;
+		}
 	}
 	
-	
-	// protocol-specific message constructor - INFORM_ASKING_PRICE
+	// protocol-specific message constructor - INFORM_ASKING_PRICE, INFORM_WINNER, PROPOSE_BIDDING_PRICE
 	public Message(int messageType, String sender, String receiver, String itemID, int askingPrice) {
 		this.setMessageType(messageType);
 		this.sender = sender;
 		this.receiver = receiver;
-		this.askingPrice = askingPrice;
 		this.itemID = itemID;
+
+		if (messageType == 2) {  //INFORM_START_OF_AUCTION
+			this.askingPrice = askingPrice;
+		}
+		else if (messageType == 5) {  //INFORM_WINNER
+			this.salePrice = askingPrice;
+		}
+		else if (messageType == 8) {  //PROPOSE_BIDDING_PRICE
+			this.biddingPrice = askingPrice;
+		}
 	}
 
 	
+	
 
-	// protocol-specific message constructor - INFORM_ASKING_PRICE
-	public Message(int messageType, String sender, String receiver, int askingPrice, int salePrice) {
-		this.setMessageType(messageType);
-		this.sender = sender;
-		this.receiver = receiver;
-		this.itemID = itemID;
-		this.salePrice = salePrice;
+	public Integer getBiddingPrice() {
+		return biddingPrice;
 	}
 
+	public void setBiddingPrice(Integer biddingPrice) {
+		this.biddingPrice = biddingPrice;
+	}
+
+	public Integer getSalePrice() {
+		return salePrice;
+	}
+
+	public void setSalePrice(Integer salePrice) {
+		this.salePrice = salePrice;
+	}
+	
 	/**
 	 * @return the message
 	 */

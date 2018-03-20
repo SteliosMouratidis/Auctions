@@ -41,11 +41,13 @@ public class Agent {
 
 		try {
 			String auctioneerID = "auctioneer";
+			
 			ItemAgent[] items = new ItemAgent[4];
 			items[0] = new ItemAgent("table", 100, 120, 5);
 			items[1] = new ItemAgent("chair", 100, 120, 5);
 			items[2] = new ItemAgent("bench", 100, 120, 5);
 			items[3] = new ItemAgent("tv", 100, 120, 5);
+			
 			dutchProtocol(auctioneerID, myname, items);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -65,46 +67,64 @@ public class Agent {
 		System.out.print("Start buyer, press return ");
 		String command = in.readLine();
 
-		while ((message = mailbox.receive(myname)) == null) {
-			if (message.getMessageType() == 1) { // start auction
-				auctionType = message.getAuctionType();
-				break;
+		//wait for a start auction message
+		while (true) {
+			message = mailbox.receive(myname);
+			if(message != null) {
+				if (message.getMessageType() == 1) { // start auction
+					auctionType = message.getAuctionType();
+					break;
+				}
 			}
 		}
 
 		Boolean auction = true;
 		if (auctionType == "dutch") {
-			while ((message = mailbox.receive(myname)) == null) {
-				if (message.getMessageType() == 2) { // inform asking price
-					currentAskingPrice = message.getAskingPrice();
-					currentItem = message.getItemID();
-					break;
-				}
-			}
-			ItemAgent currentItemStats = null;
-			for (ItemAgent item : items) {
-				if (item.itemID.equals(currentItem)) {
-					currentItemStats = item;
-					if (currentAskingPrice <= item.acceptBidPrice) {
-						message = new Message(Message.PROPOSE_ACCEPT_PRICE, myname, auctionID, currentItem);
-						mailbox.send(message);
-					} else if (currentAskingPrice > item.acceptBidPrice) {
-						message = new Message(Message.NO_MESSAGE, myname, auctionID, currentItem);
-						mailbox.send(message);
+			//wait for an asking price
+			while (true) {
+				message = mailbox.receive(myname);
+				if(message != null) {
+					if (message.getMessageType() == 2) {  //start auction
+						currentAskingPrice = message.getAskingPrice();
+						currentItem = message.getItemID();
+						break;
 					}
 				}
 			}
-			while ((message = mailbox.receive(myname)) == null)
-				;
+			ItemAgent currentItemStats = null;
+			//find the item they're selling and match with what i have
+			for (ItemAgent item : items) {
+				if (item.itemID.equals(currentItem)) {
+					currentItemStats = item;
+				}
+			}
+				
+			//if asking price is below what i will bid on, then propose to accept
+			if (currentAskingPrice <= currentItemStats.getAcceptBidPrice()) {
+				message = new Message(Message.PROPOSE_ACCEPT_PRICE, myname, auctionID, currentItem);
+				mailbox.send(message);
+			} 
+			//if above my price send no message
+			else if (currentAskingPrice > currentItemStats.getAcceptBidPrice()) {
+				message = new Message(Message.NO_MESSAGE, myname, auctionID, currentItem);
+				mailbox.send(message);
+			}
+
+			//wait for the next message
+			while ((message = mailbox.receive(myname)) == null);
+			
 			if (message.getMessageType() == 6) { // inform loser
-				auction = false;
+				auction = false;  //stop the auction
+				System.out.println("I Lost");
 			} else if (message.getMessageType() == 5) { // inform winner
-				auction = false;
+				auction = false;  //stop the auction
+				System.out.println("I WON!!!!!!");
 			} else if (message.getMessageType() == 2) { // inform asking price
+				//new asking price
 				currentAskingPrice = message.getAskingPrice();
 				currentItem = message.getItemID();
 			} else if (message.getMessageType() == 1) { // inform start of auction
-				auction = false;
+				auction = false;  //stop this auction, time for english auction
 				englishProtocol(auctionID, myID, currentAskingPrice, currentItemStats);
 			}
 		}
@@ -116,52 +136,69 @@ public class Agent {
 		String currentItem = currentItemStats.getItemID();
 		Message message = null;
 		Boolean auction = true;
+		
 		while (auction) {
+			//if asking price is below my max, then bid
 			if (askingPrice <= currentItemStats.getMaxPrice()) {
+				//if i can go above the bid, do it
 				if (askingPrice + currentItemStats.getIncrement() < currentItemStats.getMaxPrice()) {
 					int nextBidPrice = askingPrice + currentItemStats.getIncrement();
 					message = new Message(Message.PROPOSE_BIDDING_PRICE, myname, auctionID,	currentItemStats.getItemID(), nextBidPrice);
 					mailbox.send(message);
 				} else {
+					//or just bid on the current price
 					message = new Message(Message.PROPOSE_BID_ON_PRICE, myname, auctionID, currentItemStats.getItemID());
 					mailbox.send(message);
 				}
-			} else if (askingPrice > currentItemStats.getMaxPrice()) {
+			} 
+			//else send nothing
+			else if (askingPrice > currentItemStats.getMaxPrice()) {
 				message = new Message(Message.NO_MESSAGE, myname, auctionID, "");
 				mailbox.send(message);
 			}
 
+			//wait for a response
 			while ((message = mailbox.receive(myname)) == null);
 
+			//if loser
 			if (message.getMessageType() == 6) {
 				auction = false;
+				System.out.println("I Lost");
 				// auction is over for this agent
-			} else if (message.getMessageType() == 5) {
+			} 
+			//if winner
+			else if (message.getMessageType() == 5) {
 				auction = false;
+				System.out.println("I WON!!!!!!");
 				// auction is over for this agent
-			} else if (message.getMessageType() == 4) {
-				while ((message = mailbox.receive(myname)) == null)
-					;
+			} 
+			//if my proposal was rejected
+			else if (message.getMessageType() == 4) {
+				while ((message = mailbox.receive(myname)) == null);
 				currentAskingPrice = message.getAskingPrice();
 				currentItem = message.getItemID();
-			} else if (message.getMessageType() == 3) {
+			} 
+			//if my proposal was accepted
+			else if (message.getMessageType() == 3) {
 				while (true) {
-					while ((message = mailbox.receive(myname)) == null)
-						;
+					//wait for next message/skip a round
+					while ((message = mailbox.receive(myname)) == null);
+					//if winner
 					if (message.getMessageType() == 5) {
 						auction = false;
+						System.out.println("I WON!!!!!!");
 						// auction is over for this agent
 						break;
-					} else if (message.getMessageType() == 2) {
+					} 
+					//if someone outbid me
+					else if (message.getMessageType() == 2) {
 						currentAskingPrice = message.getAskingPrice();
 						currentItem = message.getItemID();
 						break;
 					}
 				}
 			}
-
 		}
-
 	}
 
 	/**
