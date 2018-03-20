@@ -1,11 +1,11 @@
 
-public class item {
+public class ItemAgent {
 	String itemID;
 	Integer acceptBidPrice;
 	Integer maxPrice;
 	Integer increment;
 	
-	item(String itemID, Integer acceptBidPrice, Integer maxPrice, Integer increment){
+	ItemAgent(String itemID, Integer acceptBidPrice, Integer maxPrice, Integer increment){
 		this.itemID = itemID;
 		this.acceptBidPrice = acceptBidPrice;
 		this.maxPrice = maxPrice;

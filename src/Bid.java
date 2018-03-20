@@ -1,9 +1,9 @@
 
-public class bid {
+public class Bid {
 	String bidderID;
 	Integer bidPrice;
 	
-	bid(String bidderID, Integer bidPrice){
+	Bid(String bidderID, Integer bidPrice){
 		this.bidderID = bidderID;
 		this.bidPrice = bidPrice;
 	}

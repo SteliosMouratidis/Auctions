@@ -7,15 +7,9 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/**
- * @author Martin Kollingbaum
- * University of Aberdeen
- * 2018
- *
- */
 public class Mailbox implements MailboxInterface
 {
-  private ArrayList messageList = new ArrayList() ;
+  private ArrayList<Message> messageList = new ArrayList<Message>() ;
   
 
   public Mailbox() 
@@ -34,7 +28,7 @@ public class Mailbox implements MailboxInterface
   @Override
   public synchronized Message receive(String agentname) throws RemoteException
   {
-    Iterator<Message> it = messageList.iterator()<Message> ;
+    Iterator<Message> it = messageList.iterator();
     
     while (it.hasNext() ) {
       Message m = it.next();
@@ -54,7 +48,7 @@ public class Mailbox implements MailboxInterface
   /**
    * @return the agentList
    */
-  public ArrayList getMessageList() throws RemoteException
+  public ArrayList<Message> getMessageList() throws RemoteException
   {
     return messageList ;
   }

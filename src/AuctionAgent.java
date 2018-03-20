@@ -18,10 +18,11 @@ public class AuctionAgent {
 	 * @throws NotBoundException
 	 * @throws RemoteException
 	 * @throws MalformedURLException
+	 * @throws InterruptedException 
 	 * 
 	 */
 	public AuctionAgent(String agentname, String hostname, int registryport)
-			throws MalformedURLException, RemoteException, NotBoundException {
+			throws MalformedURLException, RemoteException, NotBoundException, InterruptedException {
 		this.myname = agentname;
 		this.hostname = hostname;
 		this.registryport = registryport;
@@ -43,8 +44,12 @@ public class AuctionAgent {
 
 		try {
 
-			item[] items = new item[4];
-			items[0] = null;
+			ItemAuction[] items = new ItemAuction[4];
+			items[0] = new ItemAuction("table", 150, 100, 5, 5);
+			items[1] = new ItemAuction("chair", 150, 100, 5, 5);
+			items[2] = new ItemAuction("bench", 150, 100, 5, 5);
+			items[3] = new ItemAuction("tv", 150, 100, 5, 5);
+			
 			ArrayList<String> participants = new ArrayList<String>();
 			participants.add("ag1");
 			participants.add("ag2");
@@ -58,20 +63,22 @@ public class AuctionAgent {
 		}
 	}
 
-	private void dutchProtocol(String myID, ArrayList<String> participants, item[] items) throws IOException {
+	private void dutchProtocol(String myID, ArrayList<String> participants, ItemAuction[] items) throws IOException, InterruptedException {
 		// ===============================================
 		// Console input:
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		
 		Message message = null;
 		String auctionType = null;
 		Integer currentAskingPrice = null;
-		String currentItem = null;
-		ArrayList<bid> currentBids = new ArrayList<bid>();
+		ItemAuction currentItem = items[0];
+		ArrayList<Bid> currentBids = new ArrayList<Bid>();
 		int decrement = 5;
 
 		System.out.print("Start Auction, press return ");
 		String command = in.readLine();
-		int askingPrice = items[0].getStartingPrice();
+		
+		currentAskingPrice = currentItem.getStartingPrice();
 		for (String participant : participants) {
 			message = new Message(Message.INFORM_START_OF_AUCTION, myname, participant, "dutch");
 			mailbox.send(message);
@@ -94,8 +101,8 @@ public class AuctionAgent {
 				}
 			}
 			if (messages.size() == 0) { // if there are no messages
-				askingPrice = askingPrice - decrement;
-				if (askingPrice >= reservePrice) {
+				currentAskingPrice = currentAskingPrice - decrement;
+				if (currentAskingPrice >= currentItem.getReservePrice()) {
 					for (String participant : participants) {
 						message = new Message(Message.INFORM_ASKING_PRICE, myname, participant, items[0].getItemID(),
 								items[0].getStartingPrice());
@@ -110,17 +117,17 @@ public class AuctionAgent {
 					// end auction
 				}
 			} else {
-				accepting = null;
+				ArrayList<String> accepting = new ArrayList<String>();  //list of ids of people accepting same bid
 				for (Message msg : messages) {
 					if (msg.getMessageType() == 7) {
-						accepting.add(msg.getSender(), msg.getItem(), askingPrice);
+						accepting.add(msg.getSender());
 					} else {
-						messages.delete(msg);
+						messages.remove(msg);
 					}
 				}
 				if (accepting.size() == 0) { // no real bids in messages
-					askingPrice = askingPrice - decrement;
-					if (askingPrice >= reservePrice) {
+					currentAskingPrice = currentAskingPrice - decrement;
+					if (currentAskingPrice >= currentItem.getReservePrice()) {
 						for (String participant : participants) {
 							message = new Message(Message.INFORM_ASKING_PRICE, myname, participant,
 									items[0].getItemID(), items[0].getStartingPrice());
@@ -137,12 +144,10 @@ public class AuctionAgent {
 					}
 				} else if (accepting.size() == 1) {
 					auction = false;
-					message = new Message(Message.INFORM_WINNER, myname, messages.get(0).getSender(),
-							items[0].getItemID());
+					message = new Message(Message.INFORM_WINNER, myname, messages.get(0).getSender(), items[0].getItemID());
 					mailbox.send(message);
 
-					participants = participants - winner;
-
+					participants.remove(message.getReceiver());  //remove winner
 					for (String participant : participants) {
 						message = new Message(Message.INFORM_LOSER, myname, participant, items[0].getItemID());
 						mailbox.send(message);
@@ -150,31 +155,31 @@ public class AuctionAgent {
 					// end auction
 				} else if (accepting.size() > 1) {
 					auction = false;
-					englishAuctionParticipants = null;
+					ArrayList<String> englishAuctionParticipants = new ArrayList<String>();
 
 					for (String participant : accepting) {
-						message = new Message(Message.INFORM_START_OF_AUCTION, myname, participant, "english",
-								askingPrice);
+						message = new Message(Message.INFORM_START_OF_AUCTION, myname, participant, "english");
 						mailbox.send(message);
 						englishAuctionParticipants.add(participant);
 					}
 					TimeUnit.SECONDS.sleep(1);
 					// end auction, start english auction
-					englishProtocol();
+					englishProtocol(myID, currentItem, englishAuctionParticipants, currentAskingPrice);
 				}
 			}
 		}
 	}
 
-	private void englishProtocol(String auctionID, String itemID, ArrayList<String> participants, Integer askingPrice) throws IOException
+	private void englishProtocol(String auctionID, ItemAuction currentItem, ArrayList<String> participants, Integer askingPrice) throws IOException, InterruptedException
 	{
 	  int increment = 5;
-	  bid currentBid = new bid(null, null);
+	  Bid currentBid = new Bid(null, null);
 	  int currentAskingPrice = askingPrice;
 	  Message message = null ;
 	  Boolean auction = true;
+	  
 	  for(String participant: participants) {
-		  message = new Message (Message.INFORM_ASKING_PRICE, myname, participant, items[0].getItemID(), items[0].getStartingPrice());
+		  message = new Message (Message.INFORM_ASKING_PRICE, myname, participant, currentItem.getItemID(), askingPrice);
 		  mailbox.send(message);
 	  }
 	  TimeUnit.SECONDS.sleep(1);
@@ -189,49 +194,63 @@ public class AuctionAgent {
 		  if(messages.isEmpty()) {
 			  auction = false; //end auction
 			  if(currentBid.getBidderID() == null) {
-				  message = new Message (Message.INFORM_WINNER, myname, messages.get(0).getSender(), items[0].getItemID());
+				  message = new Message (Message.INFORM_WINNER, myname, messages.get(0).getSender(), currentItem.getItemID());
 	    		  mailbox.send(message);
-		  			for(String participant: participant-winner) {
+	    		  participants.remove(message.getReceiver());
+		  			for(String participant: participants) {
 		    		    message = new Message (Message.INFORM_LOSER, myname, participant, "english", askingPrice);
 		    		    mailbox.send(message);
 					}
 			  }
 			  else {
-				  message = new Message (Message.INFORM_WINNER, myname, messages.get(0).getSender(), items[0].getItemID());
+				  message = new Message (Message.INFORM_WINNER, myname, messages.get(0).getSender(), currentItem.getItemID());
 	    		  mailbox.send(message);
-		  			for(String participant: participant-winner) {
+		  			for(String participant: participants) {
 		    		    message = new Message (Message.INFORM_LOSER, myname, participant, "english", askingPrice);
 		    		    mailbox.send(message);
 					}
 			  }
 		  }
 		  else {
+			  ArrayList<Message> rejectRecipients = new ArrayList<Message>();
 			  for(Message msg: messages) {
-				  message.remove(all messages not at asking price);
+				  rejectRecipients.add(msg);
+				  if(msg.getMessageType() != 8 || msg.getMessageType() != 9) {  //if message isnt a bid delete it
+					  messages.remove(msg);
+				  }
+				  else {
+					  if(msg.getAskingPrice() < currentAskingPrice) {  //if below asking price
+						  messages.remove(msg);
+					  }
+				  }
+				  //message.remove(all messages not at asking price);
 			  }
-			  currentBid.setBidPrice((int)msg.getPrice());
-			  currentBid.setBidderID(msg.getSender());
-			  for(Message msg: messages) {
-				  message.remove(high bid message);
+			  
+			  currentBid.setBidPrice((int)messages.get(0).getPrice());
+			  currentBid.setBidderID(messages.get(0).getSender());
+			  
+			  for(Message msg: rejectRecipients) {
+				  rejectRecipients.remove(messages.get(0));  //remove winner
 			  }
 			  for(Message msg: messages) {
-	    		    message = new Message (Message.INFORM_REJECT, myname, participant, "english", askingPrice);
+	    		    message = new Message (Message.INFORM_REJECT, myname, msg.getSender(), currentItem.getItemID());
 	    		    mailbox.send(message);
 			  }
 			  currentBid.setBidPrice(currentBid.getBidPrice()+increment);
 			  for(Message msg: messages) {
-	    		    message = new Message (Message.INFORM_ASKING_PRICE, myname, participant, "english", askingPrice);
+	    		    message = new Message (Message.INFORM_ASKING_PRICE, myname, msg.getSender(), currentItem.getItemID() ,currentAskingPrice);
 	    		    mailbox.send(message);
 			  }
-				TimeUnit.SECONDS.sleep(1);
+			  TimeUnit.SECONDS.sleep(1);
 		  }
 	  }
   }
 
 	/**
 	 * @param args
+	 * @throws InterruptedException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 
 		// Specify the security policy and set the security manager.
 		System.setProperty("java.security.policy", "security.policy");
