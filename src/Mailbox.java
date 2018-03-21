@@ -21,7 +21,7 @@ public class Mailbox implements MailboxInterface
   @Override
   public synchronized void send(Message message) throws RemoteException
   {
-    System.out.println ("Mailbox> in send: agent " + message.getSender() + " deposits message ]" ) ;
+    System.out.println ("Mailbox> in send: " + message.getSender() + " deposits message " + Integer.toString(message.getMessageType()) + " for " + message.getReceiver());
     messageList.add( message ) ;
   }
 
@@ -34,7 +34,7 @@ public class Mailbox implements MailboxInterface
       Message m = it.next();
       if ( m.getReceiver().equals(agentname) )
       {
-        System.out.println("Mailbox> in receive: message for agent " + agentname + " found" );
+        System.out.println("Mailbox> in receive: message for " + agentname + " found" );
         it.remove();
         return m ;
         

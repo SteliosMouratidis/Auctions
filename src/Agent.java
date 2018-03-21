@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.concurrent.TimeUnit;
 
 public class Agent {
 	private String myname = null;
@@ -16,10 +17,11 @@ public class Agent {
 	 * @throws NotBoundException
 	 * @throws RemoteException
 	 * @throws MalformedURLException
+	 * @throws InterruptedException 
 	 * 
 	 */
 	public Agent(String agentname, String hostname, int registryport)
-			throws MalformedURLException, RemoteException, NotBoundException {
+			throws MalformedURLException, RemoteException, NotBoundException, InterruptedException {
 		this.myname = agentname;
 		this.hostname = hostname;
 		this.registryport = registryport;
@@ -43,7 +45,7 @@ public class Agent {
 			String auctioneerID = "auctioneer";
 			
 			ItemAgent[] items = new ItemAgent[4];
-			items[0] = new ItemAgent("table", 100, 120, 5);
+			items[0] = new ItemAgent("table", 120, 130, 5);
 			items[1] = new ItemAgent("chair", 100, 120, 5);
 			items[2] = new ItemAgent("bench", 100, 120, 5);
 			items[3] = new ItemAgent("tv", 100, 120, 5);
@@ -55,7 +57,7 @@ public class Agent {
 		}
 	}
 
-	private void dutchProtocol(String auctionID, String myID, ItemAgent[] items) throws IOException {
+	private void dutchProtocol(String auctionID, String myID, ItemAgent[] items) throws IOException, InterruptedException {
 		// ===============================================
 		// Console input:
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -73,45 +75,60 @@ public class Agent {
 			if(message != null) {
 				if (message.getMessageType() == 1) { // start auction
 					auctionType = message.getAuctionType();
+					System.out.println(auctionType);
 					break;
 				}
 			}
 		}
 
+		ItemAgent currentItemStats = null;
 		Boolean auction = true;
-		if (auctionType == "dutch") {
-			//wait for an asking price
-			while (true) {
-				message = mailbox.receive(myname);
-				if(message != null) {
-					if (message.getMessageType() == 2) {  //start auction
-						currentAskingPrice = message.getAskingPrice();
-						currentItem = message.getItemID();
-						break;
-					}
+
+		//wait for first asking price
+		while (true) {
+			message = mailbox.receive(myname);
+			if(message != null) {
+				if (message.getMessageType() == 2) {  //asking price
+					currentAskingPrice = message.getAskingPrice();
+					currentItem = message.getItemID();
+					break;
 				}
 			}
-			ItemAgent currentItemStats = null;
+		}
+		
+		System.out.println(currentAskingPrice);
+		
+		if(currentItemStats == null){
 			//find the item they're selling and match with what i have
 			for (ItemAgent item : items) {
 				if (item.itemID.equals(currentItem)) {
 					currentItemStats = item;
 				}
 			}
+		}
+		
+		System.out.println(currentItemStats.getAcceptBidPrice());
+		while (auction) {
 				
 			//if asking price is below what i will bid on, then propose to accept
 			if (currentAskingPrice <= currentItemStats.getAcceptBidPrice()) {
 				message = new Message(Message.PROPOSE_ACCEPT_PRICE, myname, auctionID, currentItem);
 				mailbox.send(message);
+				System.out.println("At or below my price, send accept");
 			} 
 			//if above my price send no message
 			else if (currentAskingPrice > currentItemStats.getAcceptBidPrice()) {
 				message = new Message(Message.NO_MESSAGE, myname, auctionID, currentItem);
 				mailbox.send(message);
+				System.out.println("Above my price, send no message");
 			}
 
+			TimeUnit.SECONDS.sleep(2);
+			
+			System.out.println("Going to wait for a message from the auctioneer");
 			//wait for the next message
 			while ((message = mailbox.receive(myname)) == null);
+			System.out.println("Found Message " + message.getMessageType());
 			
 			if (message.getMessageType() == 6) { // inform loser
 				auction = false;  //stop the auction
@@ -123,10 +140,13 @@ public class Agent {
 				//new asking price
 				currentAskingPrice = message.getAskingPrice();
 				currentItem = message.getItemID();
+				System.out.println(currentAskingPrice);
 			} else if (message.getMessageType() == 1) { // inform start of auction
 				auction = false;  //stop this auction, time for english auction
 				englishProtocol(auctionID, myID, currentAskingPrice, currentItemStats);
 			}
+			TimeUnit.SECONDS.sleep(1);
+			
 		}
 	}
 
@@ -203,8 +223,9 @@ public class Agent {
 
 	/**
 	 * @param args
+	 * @throws InterruptedException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 
 		// Specify the security policy and set the security manager.
 		System.setProperty("java.security.policy", "security.policy");
