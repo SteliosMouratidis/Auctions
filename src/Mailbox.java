@@ -5,11 +5,12 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Iterator;
 
 public class Mailbox implements MailboxInterface
 {
-  private ArrayList<Message> messageList = new ArrayList<Message>() ;
+  private CopyOnWriteArrayList<Message> messageList = new CopyOnWriteArrayList<Message>() ;
   
 
   public Mailbox() 
@@ -29,15 +30,15 @@ public class Mailbox implements MailboxInterface
   public synchronized Message receive(String agentname) throws RemoteException
   {
     Iterator<Message> it = messageList.iterator();
-    
+    ArrayList<Message> messagesToDelete = new ArrayList<Message>() ;
     while (it.hasNext() ) {
       Message m = it.next();
       if ( m.getReceiver().equals(agentname) )
       {
         System.out.println("Mailbox> in receive: message for " + agentname + " found" );
-        it.remove();
+        messagesToDelete.add(m);
+        messageList.remove(m);
         return m ;
-        
       }
         
     }
@@ -48,7 +49,7 @@ public class Mailbox implements MailboxInterface
   /**
    * @return the agentList
    */
-  public ArrayList<Message> getMessageList() throws RemoteException
+  public CopyOnWriteArrayList<Message> getMessageList() throws RemoteException
   {
     return messageList ;
   }

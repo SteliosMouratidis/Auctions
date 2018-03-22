@@ -52,7 +52,7 @@ public class AuctionAgent {
 			
 			ArrayList<String> participants = new ArrayList<String>();
 			participants.add("ag1");
-			//participants.add("ag2");
+			participants.add("ag2");
 			//participants.add("ag3");
 			//participants.add("ag4");
 
@@ -96,11 +96,12 @@ public class AuctionAgent {
 			System.out.println("Inform First Asking Price " + Integer.toString(currentItem.getStartingPrice()));
 		}
 		//wait for them to process the message and send something back
-		TimeUnit.SECONDS.sleep(1);
+		TimeUnit.SECONDS.sleep(2);
 
 		Boolean auction = true;
 		while (auction) {
 			ArrayList<Message> messages = new ArrayList<Message>();  //list of all messages
+			
 			//receive messages from all agents
 			for (String participant : participants) {
 				message = mailbox.receive(myID);
@@ -109,14 +110,19 @@ public class AuctionAgent {
 				}
 			}
 
-			Boolean notNoMessage = false;
+			Boolean onlyNoMessages = true;
 			for (Message msg : messages) {
 				if (msg.getMessageType() != 0) {
-					notNoMessage = true;
+					onlyNoMessages = false;
 				} 
 			}
 			
-			if (!(notNoMessage)) { // if there only no message messages
+			System.out.println("Size of messages " + messages.size());
+			//for (Message msg : messages) {
+				//System.out.println("mt: " + msg.getMessageType());
+			//}
+			
+			if (onlyNoMessages) { // if there only no message messages
 				currentAskingPrice = currentAskingPrice - decrement;  //decrement price
 				//if still above reserve, inform asking price
 				if (currentAskingPrice >= currentItem.getReservePrice()) {
@@ -125,7 +131,6 @@ public class AuctionAgent {
 								currentAskingPrice);
 						mailbox.send(message);
 						System.out.println("Inform Asking Price " + Integer.toString(currentAskingPrice));
-						TimeUnit.SECONDS.sleep(2);
 					}
 				} 
 				//else inform everyone they lose
@@ -138,23 +143,24 @@ public class AuctionAgent {
 					}
 					// end auction
 				}
+				TimeUnit.SECONDS.sleep(2);
 			} 
-			//if there is at least 1 message
+			//if there is at least 1 message accepting
 			else {
 				ArrayList<String> accepting = new ArrayList<String>();  //list of ids of people accepting same bid
 				//for each message, add people who accept this price to accepting list
 				for (Message msg : messages) {
+					//System.out.println("in loop type: " + msg.getMessageType());
 					if (msg.getMessageType() == 7) {
 						accepting.add(msg.getSender());
 					} 
 					//else remove unnecessary messages
-					else {
-						messages.remove(msg);
-					}
+					//else {
+						//messages.remove(msg);
+					//}
 				}
-				
-				System.out.println(accepting.size());
-				System.out.println(accepting.get(0));
+				//System.out.println(accepting.size());
+				//System.out.println(accepting.get(0));
 				
 				if (accepting.size() == 0) { // no real bids in messages
 					currentAskingPrice = currentAskingPrice - decrement;
@@ -181,7 +187,7 @@ public class AuctionAgent {
 					auction = false;
 					message = new Message(Message.INFORM_WINNER, myname, messages.get(0).getSender(), currentItem.getItemID());
 					mailbox.send(message);
-					System.out.println("Inform Winner");
+					System.out.println("Inform Winner " + messages.get(0).getSender());
 
 					participants.remove(message.getReceiver());  //remove winner
 					for (String participant : participants) {

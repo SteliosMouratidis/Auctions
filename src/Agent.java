@@ -45,10 +45,19 @@ public class Agent {
 			String auctioneerID = "auctioneer";
 			
 			ItemAgent[] items = new ItemAgent[4];
-			items[0] = new ItemAgent("table", 120, 130, 5);
-			items[1] = new ItemAgent("chair", 100, 120, 5);
-			items[2] = new ItemAgent("bench", 100, 120, 5);
-			items[3] = new ItemAgent("tv", 100, 120, 5);
+			
+			if(myname.equals("ag1")) {
+				items[0] = new ItemAgent("table", 120, 130, 5);
+				items[1] = new ItemAgent("chair", 100, 120, 5);
+				items[2] = new ItemAgent("bench", 100, 120, 5);
+				items[3] = new ItemAgent("tv", 100, 120, 5);
+			}
+			else if (myname.equals("ag2")) {
+				items[0] = new ItemAgent("table", 135, 130, 5);
+				items[1] = new ItemAgent("chair", 100, 120, 5);
+				items[2] = new ItemAgent("bench", 100, 120, 5);
+				items[3] = new ItemAgent("tv", 100, 120, 5);
+			}
 			
 			dutchProtocol(auctioneerID, myname, items);
 		} catch (IOException e) {
@@ -109,7 +118,6 @@ public class Agent {
 		
 		System.out.println(currentItemStats.getAcceptBidPrice());
 		while (auction) {
-				
 			//if asking price is below what i will bid on, then propose to accept
 			if (currentAskingPrice <= currentItemStats.getAcceptBidPrice()) {
 				message = new Message(Message.PROPOSE_ACCEPT_PRICE, myname, auctionID, currentItem);
@@ -122,11 +130,10 @@ public class Agent {
 				mailbox.send(message);
 				System.out.println("Above my price, send no message");
 			}
-
-			TimeUnit.SECONDS.sleep(2);
 			
 			System.out.println("Going to wait for a message from the auctioneer");
 			//wait for the next message
+			//TimeUnit.SECONDS.sleep(2);
 			while ((message = mailbox.receive(myname)) == null);
 			System.out.println("Found Message " + message.getMessageType());
 			
@@ -145,7 +152,6 @@ public class Agent {
 				auction = false;  //stop this auction, time for english auction
 				englishProtocol(auctionID, myID, currentAskingPrice, currentItemStats);
 			}
-			TimeUnit.SECONDS.sleep(1);
 			
 		}
 	}

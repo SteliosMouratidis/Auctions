@@ -28,8 +28,8 @@ gnome-terminal -e "bash -c \"java -classpath ./src AuctionAgent auctioneer dom-V
 echo "Starting ag1"
 gnome-terminal -e "bash -c \"java -classpath ./src Agent ag1 dom-VirtualBox 50010; exec bash\""
 
-#echo "Starting ag2"
-#gnome-terminal -e "bash -c \"java -classpath ./src Agent ag2 dom-VirtualBox 50010; exec bash\""
+echo "Starting ag2"
+gnome-terminal -e "bash -c \"java -classpath ./src Agent ag2 dom-VirtualBox 50010; exec bash\""
 
 #echo "Starting ag2"
 #gnome-terminal -e "bash -c \"java -classpath ./src Agent ag3 dom-VirtualBox 50010; exec bash\""
