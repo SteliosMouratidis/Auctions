@@ -1,0 +1,17 @@
+ag1,table,135,145,5
+ag1,chair,100,120,5
+ag1,bench,100,120,5
+ag1,clock,100,120,5
+
+ag2,table,135,150,5
+ag2,chair,100,120,5
+ag2,bench,100,120,5
+ag2,clock,100,120,5
+
+#ag3,table,135,145,5
+#ag3,chair,100,120,5
+#ag3,bench,100,120,5
+#ag3,clock,100,120,5
+
+#Agent Data
+#agentName, itemName, price to accept the bid, max price to spend in english auction, increment value on proposed bid

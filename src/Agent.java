@@ -1,4 +1,6 @@
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -44,20 +46,24 @@ public class Agent {
 		try {
 			String auctioneerID = "auctioneer";
 			
-			ItemAgent[] items = new ItemAgent[4];
+			//ItemAgent[] items = new ItemAgent[4];
+			//itemID, acceptPrice, maxPrice, increment
 			
+			ItemAgent[] items = getItems(myname);
+			/*
 			if(myname.equals("ag1")) {
-				items[0] = new ItemAgent("table", 120, 130, 5);
+				items[0] = new ItemAgent("table", 135, 145, 5);
 				items[1] = new ItemAgent("chair", 100, 120, 5);
 				items[2] = new ItemAgent("bench", 100, 120, 5);
 				items[3] = new ItemAgent("tv", 100, 120, 5);
 			}
 			else if (myname.equals("ag2")) {
-				items[0] = new ItemAgent("table", 135, 130, 5);
+				items[0] = new ItemAgent("table", 135, 150, 5);
 				items[1] = new ItemAgent("chair", 100, 120, 5);
 				items[2] = new ItemAgent("bench", 100, 120, 5);
 				items[3] = new ItemAgent("tv", 100, 120, 5);
 			}
+			*/
 			
 			dutchProtocol(auctioneerID, myname, items);
 		} catch (IOException e) {
@@ -65,6 +71,42 @@ public class Agent {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	private ItemAgent[] getItems(String myname) throws IOException {
+		File file_count = new File("./src/AgentData.txt");
+		FileReader fileReader_count = new FileReader(file_count);
+		BufferedReader bufferedReader_count = new BufferedReader(fileReader_count);
+		int i = 0;
+		String line;
+		while ((line = bufferedReader_count.readLine()) != null) {
+			if(line.startsWith(myname)) {
+				i+=1;
+			}
+		}
+		ItemAgent[] itemArray = new ItemAgent[i];
+		fileReader_count.close();
+		
+		File file = new File("./src/AgentData.txt");
+		FileReader fileReader = new FileReader(file);
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
+		i = 0;
+		while ((line = bufferedReader.readLine()) != null) {
+			if(line.startsWith(myname)) {  //if line is agent item data
+				//System.out.println(line);
+				String[] attr = line.split(",");
+				itemArray[i] = new ItemAgent(attr[1], Integer.parseInt(attr[2]), 
+						Integer.parseInt(attr[3]), Integer.parseInt(attr[4]));
+				System.out.println(attr[1] + Integer.parseInt(attr[2]) +
+						Integer.parseInt(attr[3])+ Integer.parseInt(attr[4]));
+				i += 1;
+			}
+		}
+		fileReader.close();
+		return itemArray;
+	}
+	
+	
 
 	private void dutchProtocol(String auctionID, String myID, ItemAgent[] items) throws IOException, InterruptedException {
 		// ===============================================
@@ -163,28 +205,42 @@ public class Agent {
 		Message message = null;
 		Boolean auction = true;
 		
+		//wait for first asking price
+		while (true) {
+			message = mailbox.receive(myname);
+			if(message != null) {
+				if (message.getMessageType() == 2) {  //asking price
+					currentAskingPrice = message.getAskingPrice();
+					currentItem = message.getItemID();
+					break;
+				}
+			}
+		}
 		while (auction) {
 			//if asking price is below my max, then bid
-			if (askingPrice <= currentItemStats.getMaxPrice()) {
+			if (currentAskingPrice <= currentItemStats.getMaxPrice()) {
 				//if i can go above the bid, do it
-				if (askingPrice + currentItemStats.getIncrement() < currentItemStats.getMaxPrice()) {
-					int nextBidPrice = askingPrice + currentItemStats.getIncrement();
+				if (currentAskingPrice + currentItemStats.getIncrement() < currentItemStats.getMaxPrice()) {
+					int nextBidPrice = currentAskingPrice + currentItemStats.getIncrement();
 					message = new Message(Message.PROPOSE_BIDDING_PRICE, myname, auctionID,	currentItemStats.getItemID(), nextBidPrice);
 					mailbox.send(message);
+					System.out.println("Below my price, propose bid higher");
 				} else {
 					//or just bid on the current price
 					message = new Message(Message.PROPOSE_BID_ON_PRICE, myname, auctionID, currentItemStats.getItemID());
 					mailbox.send(message);
+					System.out.println("At my price, propose bid on current price");
 				}
 			} 
 			//else send nothing
-			else if (askingPrice > currentItemStats.getMaxPrice()) {
+			else if (currentAskingPrice > currentItemStats.getMaxPrice()) {
 				message = new Message(Message.NO_MESSAGE, myname, auctionID, "");
 				mailbox.send(message);
 			}
 
 			//wait for a response
 			while ((message = mailbox.receive(myname)) == null);
+			System.out.println("Found Message " + message.getMessageType());
 
 			//if loser
 			if (message.getMessageType() == 6) {
@@ -216,7 +272,7 @@ public class Agent {
 						// auction is over for this agent
 						break;
 					} 
-					//if someone outbid me
+					//else if someone outbid me
 					else if (message.getMessageType() == 2) {
 						currentAskingPrice = message.getAskingPrice();
 						currentItem = message.getItemID();
