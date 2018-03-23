@@ -80,7 +80,7 @@ public class Agent {
 		int i = 0;
 		String line;
 		while ((line = bufferedReader_count.readLine()) != null) {
-			if(line.startsWith(myname)) {
+			if(line.startsWith(myname+",")) {
 				i+=1;
 			}
 		}
@@ -92,7 +92,7 @@ public class Agent {
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
 		i = 0;
 		while ((line = bufferedReader.readLine()) != null) {
-			if(line.startsWith(myname)) {  //if line is agent item data
+			if(line.startsWith(myname+",")) {  //if line is agent item data
 				//System.out.println(line);
 				String[] attr = line.split(",");
 				itemArray[i] = new ItemAgent(attr[1], Integer.parseInt(attr[2]), 
@@ -117,8 +117,8 @@ public class Agent {
 		Integer currentAskingPrice = null;
 		String currentItem = null;
 
-		System.out.print("Start buyer, press return ");
-		String command = in.readLine();
+		//System.out.print("Start buyer, press return ");
+		//String command = in.readLine();
 
 		//wait for a start auction message
 		while (true) {

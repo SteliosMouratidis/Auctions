@@ -1,7 +1,6 @@
 #!/bin/bash
-# A sample Bash script
+#USAGE: argument is the number of agents to create
 
-#echo Hello World!
 path=$(pwd)
 
 path="$path/src/"
@@ -22,14 +21,12 @@ echo "Starting Mailbox"
 x-terminal-emulator -e "java -classpath ./src Mailbox 50010 50011"
 
 sleep .5
+echo "Starting $1 Agents"
+for i in $(seq 1 $1)
+do
+	echo "Starting ag$i"
+	gnome-terminal -e "bash -c \"java -classpath ./src Agent ag$i localhost 50010; exec bash\""
+done
+
 echo "Starting Auctioneer"
-gnome-terminal -e "bash -c \"java -classpath ./src AuctionAgent auctioneer dom-VirtualBox 50010; exec bash\""
-
-echo "Starting ag1"
-gnome-terminal -e "bash -c \"java -classpath ./src Agent ag1 dom-VirtualBox 50010; exec bash\""
-
-echo "Starting ag2"
-gnome-terminal -e "bash -c \"java -classpath ./src Agent ag2 dom-VirtualBox 50010; exec bash\""
-
-#echo "Starting ag2"
-#gnome-terminal -e "bash -c \"java -classpath ./src Agent ag3 dom-VirtualBox 50010; exec bash\""
+gnome-terminal -e "bash -c \"java -classpath ./src AuctionAgent auctioneer localhost 50010 $1; exec bash\""

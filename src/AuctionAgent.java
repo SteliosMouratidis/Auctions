@@ -24,7 +24,7 @@ public class AuctionAgent {
 	 * @throws InterruptedException
 	 * 
 	 */
-	public AuctionAgent(String agentname, String hostname, int registryport)
+	public AuctionAgent(String agentname, String hostname, int registryport, int numAgents)
 			throws MalformedURLException, RemoteException, NotBoundException, InterruptedException {
 		this.myname = agentname;
 		this.hostname = hostname;
@@ -56,8 +56,10 @@ public class AuctionAgent {
 			//items[3] = new ItemAuction("tv", 150, 100, 5, 5);
 
 			ArrayList<String> participants = new ArrayList<String>();
-			participants.add("ag1");
-			participants.add("ag2");
+			for(int i = 1; i <= numAgents; i++) {
+				participants.add("ag"+i);
+			}
+			//participants.add("ag2");
 			// participants.add("ag3");
 			// participants.add("ag4");
 
@@ -246,8 +248,16 @@ public class AuctionAgent {
 					for (String participant : accepting) {
 						message = new Message(Message.INFORM_START_OF_AUCTION, myID, participant, "english");
 						mailbox.send(message);
-						System.out.println("Inform Start of English Auction");
+						System.out.println("Inform Start of English Auction " + participant);
 						englishAuctionParticipants.add(participant);
+					}
+					
+					for (String participant : participants) {
+						if(!(accepting.contains(participant))){  //if not accepting, inform loser
+							message = new Message(Message.INFORM_LOSER, myID, participant, currentItem.getItemID());
+							mailbox.send(message);
+							System.out.println("Inform Loser " + participant);
+						}
 					}
 					TimeUnit.SECONDS.sleep(2);
 					// end auction, start english auction
@@ -410,11 +420,11 @@ public class AuctionAgent {
 		String agentname = args[0];
 		String hostname = args[1];
 		int registryport = Integer.parseInt(args[2]);
-
+		int numAgents = Integer.parseInt(args[3]);
 		try {
 			// instantiate an agent from this class
 
-			new AuctionAgent(agentname, hostname, registryport);
+			new AuctionAgent(agentname, hostname, registryport, numAgents);
 
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();

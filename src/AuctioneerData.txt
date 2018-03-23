@@ -1,9 +1,9 @@
 auctioneer,table,150,100,5,5
-auctioneer,chair,150,100,5,5
-auctioneer,bench,150,100,5,5
-auctioneer,clock,150,100,5,5
-auctioneer,watch,150,100,5,5
-auctioneer,microwave,150,100,5,5
+#auctioneer,chair,150,100,5,5
+#auctioneer,bench,150,100,5,5
+#auctioneer,clock,150,100,5,5
+#auctioneer,watch,150,100,5,5
+#auctioneer,microwave,150,100,5,5
 
 #Auctioneer Data
 #auctioneerName, itemName, initial asking price, reserve price, decrement value, increment value
