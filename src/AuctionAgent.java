@@ -338,8 +338,27 @@ public class AuctionAgent {
 					if (m.getMessageType() != 8 && m.getMessageType() != 9) {
 						mIT.remove();
 					}
-					
 				}
+				
+				//else no bids, auction over
+				if(messages.isEmpty()) {
+					auction = false;
+					message = new Message(Message.INFORM_WINNER, myID, currentBid.getBidderID(),
+							currentItem.getItemID());
+					mailbox.send(message);
+					System.out.println("Inform Winner " + currentBid.getBidderID());
+					
+					for (String participant : participants) {
+						if(!(participant.equals(currentBid.getBidderID()))) {
+							message = new Message(Message.INFORM_LOSER, myID, participant, currentItem.getItemID());
+							mailbox.send(message);
+							System.out.println("Inform Loser " + participant);
+						}
+					}
+					break;
+				}
+				
+				
 				/*
 				for (Message msg : messages) {
 					if (msg.getMessageType() != 8 && msg.getMessageType() != 9) {
@@ -376,7 +395,8 @@ public class AuctionAgent {
 					}
 					
 					//send accept message to winner of current bid
-					message = new Message(Message.INFORM_ACCEPT, myID, currentBid.getBidderID(), currentItem.getItemID(), currentBid.getBidPrice());
+					message = new Message(Message.INFORM_ACCEPT, myID, currentBid.getBidderID(), currentItem.getItemID(), 
+							currentBid.getBidPrice(), currentBid.getBidPrice() + increment);
 					mailbox.send(message);
 					System.out.println("Inform Accept " + currentBid.getBidderID() + " at " + currentBid.getBidPrice());
 					
@@ -388,7 +408,8 @@ public class AuctionAgent {
 						message = new Message(Message.INFORM_ASKING_PRICE, myID, agent, currentItem.getItemID(),
 								currentBid.getBidPrice());
 						mailbox.send(message);
-						System.out.println("Inform Asking Price " + Integer.toString(currentBid.getBidPrice()));
+						System.out.println("Inform Asking Price " + Integer.toString(currentBid.getBidPrice()) +
+								" to " + agent);
 					}
 					TimeUnit.SECONDS.sleep(2);
 				}
@@ -413,7 +434,8 @@ public class AuctionAgent {
 					}
 
 					//send accept message to winner of current bid
-					message = new Message(Message.INFORM_ACCEPT, myID, currentBid.getBidderID(), currentItem.getItemID(), currentBid.getBidPrice());
+					message = new Message(Message.INFORM_ACCEPT, myID, currentBid.getBidderID(), currentItem.getItemID(), 
+							currentBid.getBidPrice(), currentBid.getBidPrice() + increment);
 					mailbox.send(message);
 					System.out.println("Inform Accept " + currentBid.getBidderID() + " at " + currentBid.getBidPrice());
 					
@@ -423,7 +445,8 @@ public class AuctionAgent {
 						message = new Message(Message.INFORM_ASKING_PRICE, myID, agent, currentItem.getItemID(),
 								currentBid.getBidPrice());
 						mailbox.send(message);
-						System.out.println("Inform Asking Price " + Integer.toString(currentBid.getBidPrice()));
+						System.out.println("Inform Asking Price " + Integer.toString(currentBid.getBidPrice()) + 
+								" to " + agent);
 					}
 					TimeUnit.SECONDS.sleep(2);
 				}

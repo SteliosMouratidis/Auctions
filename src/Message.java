@@ -33,6 +33,7 @@ public class Message implements Serializable {
 	private double price = 0;
 	private Integer biddingPrice = null;
 	private Integer salePrice = null;
+	private Integer originalBiddingPrice = null;
 
 	//
 	/**
@@ -56,7 +57,8 @@ public class Message implements Serializable {
 			this.itemID = message;
 		}
 	}
-	
+
+
 	// protocol-specific message constructor - INFORM_ASKING_PRICE, INFORM_WINNER, PROPOSE_BIDDING_PRICE
 	public Message(int messageType, String sender, String receiver, String itemID, int askingPrice) {
 		this.setMessageType(messageType);
@@ -73,14 +75,27 @@ public class Message implements Serializable {
 		else if (messageType == 8) {  //PROPOSE_BIDDING_PRICE
 			this.biddingPrice = askingPrice;
 		}
-		else if (messageType == 3) {  //INFORM_ACCEPT_PRICE
-			this.biddingPrice = askingPrice;
-		}
-		
+	}
+	
+	//protocol-specific message constructor - INFORM_ACCEPT_PRICE
+	public Message(int messageType, String sender, String receiver, String itemID, int originalBid, int nextBidPrice) {
+		this.setMessageType(messageType);
+		this.sender = sender;
+		this.receiver = receiver;
+		this.itemID = itemID;
+		this.originalBiddingPrice = originalBid;
+		this.biddingPrice = nextBidPrice;
 	}
 
 	
 	
+	public Integer getOriginalBiddingPrice() {
+		return originalBiddingPrice;
+	}
+
+	public void setOriginalBiddingPrice(Integer originalBiddingPrice) {
+		this.originalBiddingPrice = originalBiddingPrice;
+	}
 
 	public Integer getBiddingPrice() {
 		return biddingPrice;

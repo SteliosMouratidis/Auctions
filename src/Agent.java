@@ -266,8 +266,9 @@ public class Agent {
 			} 
 			//if my proposal was accepted
 			else if (message.getMessageType() == 3) {
-				int myBid = message.getBiddingPrice();
-				System.out.println("My proposal was accepted");
+				int myBid = message.getOriginalBiddingPrice();
+				int nextBid = message.getBiddingPrice();
+				System.out.println("My proposal was accepted at " + myBid);
 				System.out.println("Skipping next round, waiting for winner or asking price");
 				while (true) {
 					//wait for next message/skip a round
@@ -283,8 +284,8 @@ public class Agent {
 					else if (message.getMessageType() == 2) {
 						currentAskingPrice = message.getAskingPrice();
 						currentItem = message.getItemID();
-						//if new bid thats higher, break
-						if(myBid < currentAskingPrice) {
+						//if new incremented bid is higher than my bid incremented
+						if(nextBid < currentAskingPrice) {
 							System.out.println("Someone outbid me");
 							break;
 						}
