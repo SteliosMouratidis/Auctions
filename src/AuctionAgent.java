@@ -9,6 +9,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 public class AuctionAgent {
@@ -118,7 +119,7 @@ public class AuctionAgent {
 		int decrement = 5;
 
 		System.out.print("Start Auction, press return ");
-		String command = in.readLine();
+		//String command = in.readLine();
 
 		currentAskingPrice = currentItem.getStartingPrice();
 		// tell the agents the auction is starting
@@ -331,11 +332,21 @@ public class AuctionAgent {
 				// only accept 1 bid
 				
 				// if message isnt a bid delete it
+				Iterator<Message> mIT = messages.iterator();
+				while(mIT.hasNext()) {
+					Message m = mIT.next();
+					if (m.getMessageType() != 8 && m.getMessageType() != 9) {
+						mIT.remove();
+					}
+					
+				}
+				/*
 				for (Message msg : messages) {
 					if (msg.getMessageType() != 8 && msg.getMessageType() != 9) {
 						messages.remove(msg);
 					}
 				}
+				*/
 
 				// copy participants
 				ArrayList<String> rejectRecipients = new ArrayList<String>(participants);
@@ -355,13 +366,19 @@ public class AuctionAgent {
 				
 				// if theres a highest bid
 				if (higherBid) {
-					System.out.println("Current Bid is " + currentBid.getBidPrice());
+					System.out.println("New Bid is " + currentBid.getBidPrice());
+					
 					rejectRecipients.remove(currentBid.getBidderID()); // remove winner
 					for (String agent : rejectRecipients) {
 						message = new Message(Message.INFORM_REJECT, myID, agent, currentItem.getItemID());
 						mailbox.send(message);
 						System.out.println("Inform Reject " + agent);
 					}
+					
+					//send accept message to winner of current bid
+					message = new Message(Message.INFORM_ACCEPT, myID, currentBid.getBidderID(), currentItem.getItemID(), currentBid.getBidPrice());
+					mailbox.send(message);
+					System.out.println("Inform Accept " + currentBid.getBidderID() + " at " + currentBid.getBidPrice());
 					
 					//increment the bid
 					currentBid.setBidPrice(currentBid.getBidPrice() + increment);
@@ -394,7 +411,14 @@ public class AuctionAgent {
 						mailbox.send(message);
 						System.out.println("Inform Reject " + agent);
 					}
+
+					//send accept message to winner of current bid
+					message = new Message(Message.INFORM_ACCEPT, myID, currentBid.getBidderID(), currentItem.getItemID(), currentBid.getBidPrice());
+					mailbox.send(message);
+					System.out.println("Inform Accept " + currentBid.getBidderID() + " at " + currentBid.getBidPrice());
+					
 					currentBid.setBidPrice(currentBid.getBidPrice() + increment);
+					
 					for (String agent : rejectRecipients) {
 						message = new Message(Message.INFORM_ASKING_PRICE, myID, agent, currentItem.getItemID(),
 								currentBid.getBidPrice());
@@ -403,6 +427,7 @@ public class AuctionAgent {
 					}
 					TimeUnit.SECONDS.sleep(2);
 				}
+				TimeUnit.SECONDS.sleep(1);
 			}
 		}
 	}

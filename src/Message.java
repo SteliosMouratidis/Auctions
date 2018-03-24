@@ -51,8 +51,8 @@ public class Message implements Serializable {
 		if (messageType == 1) {  //INFORM_START_OF_AUCTION
 			this.auctionType = message;
 		}
-		//INFORM_LOSER, INFORM_REJECT, INFORM_ACCEPT, INFORM_ACCEPT_PRICE, PROPOSE_BID_ON_PRICE
-		else if (messageType == 6 || messageType == 4 || messageType == 3 || messageType == 7 || messageType == 9) {
+		//INFORM_LOSER, INFORM_REJECT, INFORM_ACCEPT, PROPOSE_BID_ON_PRICE
+		else if (messageType == 6 || messageType == 4 || messageType == 7 || messageType == 9) {
 			this.itemID = message;
 		}
 	}
@@ -73,6 +73,10 @@ public class Message implements Serializable {
 		else if (messageType == 8) {  //PROPOSE_BIDDING_PRICE
 			this.biddingPrice = askingPrice;
 		}
+		else if (messageType == 3) {  //INFORM_ACCEPT_PRICE
+			this.biddingPrice = askingPrice;
+		}
+		
 	}
 
 	

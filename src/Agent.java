@@ -218,6 +218,7 @@ public class Agent {
 		}
 		while (auction) {
 			//if asking price is below my max, then bid
+			System.out.println("currentAskingPrice: " + currentAskingPrice + "  MaxPrice: " + currentItemStats.getMaxPrice());
 			if (currentAskingPrice <= currentItemStats.getMaxPrice()) {
 				//if i can go above the bid, do it
 				if (currentAskingPrice + currentItemStats.getIncrement() < currentItemStats.getMaxPrice()) {
@@ -257,11 +258,17 @@ public class Agent {
 			//if my proposal was rejected
 			else if (message.getMessageType() == 4) {
 				while ((message = mailbox.receive(myname)) == null);
-				currentAskingPrice = message.getAskingPrice();
-				currentItem = message.getItemID();
+				if(message.getAskingPrice() != null && message.getItemID() != null) {
+					currentAskingPrice = message.getAskingPrice();
+					currentItem = message.getItemID();
+				}
+				System.out.println("My proposal was rejected");
 			} 
 			//if my proposal was accepted
 			else if (message.getMessageType() == 3) {
+				int myBid = message.getBiddingPrice();
+				System.out.println("My proposal was accepted");
+				System.out.println("Skipping next round, waiting for winner or asking price");
 				while (true) {
 					//wait for next message/skip a round
 					while ((message = mailbox.receive(myname)) == null);
@@ -276,7 +283,11 @@ public class Agent {
 					else if (message.getMessageType() == 2) {
 						currentAskingPrice = message.getAskingPrice();
 						currentItem = message.getItemID();
-						break;
+						//if new bid thats higher, break
+						if(myBid < currentAskingPrice) {
+							System.out.println("Someone outbid me");
+							break;
+						}
 					}
 				}
 			}

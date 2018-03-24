@@ -1,9 +1,9 @@
 ag1,table,130,145,5
 ag2,table,130,150,5
-ag3,table,135,145,5
-ag4,table,135,145,5
-ag5,table,130,145,5
-ag6,table,135,145,5
+ag3,table,135,150,5
+ag4,table,130,145,5
+ag5,table,135,155,5
+ag6,table,135,140,5
 ag7,table,130,145,5
 ag8,table,130,145,5
 ag9,table,130,145,5
