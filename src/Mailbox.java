@@ -11,11 +11,12 @@ import java.util.Iterator;
 public class Mailbox implements MailboxInterface
 {
   private CopyOnWriteArrayList<Message> messageList = new CopyOnWriteArrayList<Message>() ;
-  
+  private int numberOfMessageExchanged;
 
   public Mailbox() 
   { 
     System.out.println( "Mailbox> started." );
+    numberOfMessageExchanged = 0;
   }
 
 
@@ -24,6 +25,7 @@ public class Mailbox implements MailboxInterface
   {
     System.out.println ("Mailbox> in send: " + message.getSender() + " deposits message " + Integer.toString(message.getMessageType()) + " for " + message.getReceiver());
     messageList.add( message ) ;
+    numberOfMessageExchanged += 1;
   }
 
   @Override
@@ -53,7 +55,7 @@ public class Mailbox implements MailboxInterface
   {
     return messageList ;
   }
-
+  
   
   /**
    * @param args
@@ -85,4 +87,11 @@ public class Mailbox implements MailboxInterface
       e.printStackTrace();
     }
   }
+
+
+	@Override
+	public int getNumberOfMessages() throws RemoteException {
+		// TODO Auto-generated method stub
+		return numberOfMessageExchanged;
+	}
 }

@@ -14,6 +14,7 @@ public class Agent {
 	private String hostname = null;
 	private int registryport = 0;
 	private MailboxInterface mailbox = null;
+	private int moneySaved;
 
 	/**
 	 * @throws NotBoundException
@@ -27,6 +28,7 @@ public class Agent {
 		this.myname = agentname;
 		this.hostname = hostname;
 		this.registryport = registryport;
+		this.moneySaved = 0;
 
 		// Obtain the service reference from the RMI registry
 		// listening at hostname:registryport.
@@ -50,20 +52,6 @@ public class Agent {
 			//itemID, acceptPrice, maxPrice, increment
 			
 			ItemAgent[] items = getItems(myname);
-			/*
-			if(myname.equals("ag1")) {
-				items[0] = new ItemAgent("table", 135, 145, 5);
-				items[1] = new ItemAgent("chair", 100, 120, 5);
-				items[2] = new ItemAgent("bench", 100, 120, 5);
-				items[3] = new ItemAgent("tv", 100, 120, 5);
-			}
-			else if (myname.equals("ag2")) {
-				items[0] = new ItemAgent("table", 135, 150, 5);
-				items[1] = new ItemAgent("chair", 100, 120, 5);
-				items[2] = new ItemAgent("bench", 100, 120, 5);
-				items[3] = new ItemAgent("tv", 100, 120, 5);
-			}
-			*/
 			
 			dutchProtocol(auctioneerID, myname, items);
 		} catch (IOException e) {
@@ -184,7 +172,9 @@ public class Agent {
 				System.out.println("I Lost");
 			} else if (message.getMessageType() == 5) { // inform winner
 				auction = false;  //stop the auction
+				moneySaved = currentItemStats.getMaxPrice() - message.getSalePrice();
 				System.out.println("I WON!!!!!!");
+				System.out.println("I Saved $" + moneySaved);
 			} else if (message.getMessageType() == 2) { // inform asking price
 				//new asking price
 				currentAskingPrice = message.getAskingPrice();
@@ -252,7 +242,9 @@ public class Agent {
 			//if winner
 			else if (message.getMessageType() == 5) {
 				auction = false;
+				moneySaved = currentItemStats.getMaxPrice() - message.getSalePrice();
 				System.out.println("I WON!!!!!!");
+				System.out.println("I Saved $" + moneySaved);
 				// auction is over for this agent
 			} 
 			//if my proposal was rejected
@@ -277,6 +269,8 @@ public class Agent {
 					if (message.getMessageType() == 5) {
 						auction = false;
 						System.out.println("I WON!!!!!!");
+						moneySaved = currentItemStats.getMaxPrice() - myBid;
+						System.out.println("I Saved $" + moneySaved);
 						// auction is over for this agent
 						break;
 					} 

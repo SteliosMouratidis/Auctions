@@ -51,18 +51,10 @@ public class AuctionAgent {
 			//ItemAuction[] items = new ItemAuction[4];
 			
 			ItemAuction[] items = getItems();
-			//items[0] = new ItemAuction("table", 150, 100, 5, 5);
-			//items[1] = new ItemAuction("chair", 150, 100, 5, 5);
-			//items[2] = new ItemAuction("bench", 150, 100, 5, 5);
-			//items[3] = new ItemAuction("tv", 150, 100, 5, 5);
-
 			ArrayList<String> participants = new ArrayList<String>();
 			for(int i = 1; i <= numAgents; i++) {
 				participants.add("ag"+i);
 			}
-			//participants.add("ag2");
-			// participants.add("ag3");
-			// participants.add("ag4");
 
 			dutchProtocol(myname, participants, items);
 		} catch (IOException e) {
@@ -232,6 +224,7 @@ public class AuctionAgent {
 							currentItem.getItemID());
 					mailbox.send(message);
 					System.out.println("Inform Winner " + messages.get(0).getSender());
+					System.out.println("I made $" + (currentAskingPrice - currentItem.getReservePrice()) + " in profit");
 
 					participants.remove(message.getReceiver()); // remove winner
 					for (String participant : participants) {
@@ -266,6 +259,7 @@ public class AuctionAgent {
 				}
 			}
 		}
+		System.out.println(Integer.toString(mailbox.getNumberOfMessages()) + " Mesages were exchanged");
 	}
 
 	private void englishProtocol(String myID, ItemAuction currentItem, ArrayList<String> participants,
@@ -305,6 +299,7 @@ public class AuctionAgent {
 							currentItem.getItemID());
 					mailbox.send(message);
 					System.out.println("Inform Winner " + messages.get(0).getSender());
+					System.out.println("I made $" + (currentBid.getBidPrice() - currentItem.getReservePrice()) + " in profit");
 					// tell everyone else they lost
 					participants.remove(messages.get(0).getSender()); // remove guy who won
 					for (String participant : participants) {
@@ -319,6 +314,7 @@ public class AuctionAgent {
 							currentItem.getItemID());
 					mailbox.send(message);
 					System.out.println("Inform Winner " + messages.get(0).getSender());
+					System.out.println("I made $" + (currentBid.getBidPrice() - currentItem.getReservePrice()) + " in profit");
 					
 					for (String participant : participants) {
 						message = new Message(Message.INFORM_LOSER, myID, participant, currentItem.getItemID());
@@ -347,6 +343,7 @@ public class AuctionAgent {
 							currentItem.getItemID());
 					mailbox.send(message);
 					System.out.println("Inform Winner " + currentBid.getBidderID());
+					System.out.println("I made $" + (currentBid.getBidPrice() - currentItem.getReservePrice()) + " in profit");
 					
 					for (String participant : participants) {
 						if(!(participant.equals(currentBid.getBidderID()))) {
@@ -359,14 +356,6 @@ public class AuctionAgent {
 				}
 				
 				
-				/*
-				for (Message msg : messages) {
-					if (msg.getMessageType() != 8 && msg.getMessageType() != 9) {
-						messages.remove(msg);
-					}
-				}
-				*/
-
 				// copy participants
 				ArrayList<String> rejectRecipients = new ArrayList<String>(participants);
 
