@@ -23,7 +23,7 @@ public class Agent {
 	 * @throws InterruptedException 
 	 * 
 	 */
-	public Agent(String agentname, String hostname, int registryport)
+	public Agent(String agentname, String hostname, int registryport, String filename)
 			throws MalformedURLException, RemoteException, NotBoundException, InterruptedException {
 		this.myname = agentname;
 		this.hostname = hostname;
@@ -51,7 +51,7 @@ public class Agent {
 			//ItemAgent[] items = new ItemAgent[4];
 			//itemID, acceptPrice, maxPrice, increment
 			
-			ItemAgent[] items = getItems(myname);
+			ItemAgent[] items = getItems(myname, filename);
 			
 			dutchProtocol(auctioneerID, myname, items);
 		} catch (IOException e) {
@@ -61,8 +61,8 @@ public class Agent {
 	}
 	
 	
-	private ItemAgent[] getItems(String myname) throws IOException {
-		File file_count = new File("./src/AgentData.txt");
+	private ItemAgent[] getItems(String myname, String filename) throws IOException {
+		File file_count = new File("./src/" + filename);
 		FileReader fileReader_count = new FileReader(file_count);
 		BufferedReader bufferedReader_count = new BufferedReader(fileReader_count);
 		int i = 0;
@@ -302,11 +302,12 @@ public class Agent {
 		String agentname = args[0];
 		String hostname = args[1];
 		int registryport = Integer.parseInt(args[2]);
+		String filename = args[3];
 
 		try {
 			// instantiate an agent from this class
 
-			new Agent(agentname, hostname, registryport);
+			new Agent(agentname, hostname, registryport, filename);
 
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();

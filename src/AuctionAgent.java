@@ -25,7 +25,7 @@ public class AuctionAgent {
 	 * @throws InterruptedException
 	 * 
 	 */
-	public AuctionAgent(String agentname, String hostname, int registryport, int numAgents)
+	public AuctionAgent(String agentname, String hostname, int registryport, int numAgents, String filename)
 			throws MalformedURLException, RemoteException, NotBoundException, InterruptedException {
 		this.myname = agentname;
 		this.hostname = hostname;
@@ -50,7 +50,7 @@ public class AuctionAgent {
 			//itemID, startingPrice, reservePrice, decrement, increment
 			//ItemAuction[] items = new ItemAuction[4];
 			
-			ItemAuction[] items = getItems();
+			ItemAuction[] items = getItems(filename);
 			ArrayList<String> participants = new ArrayList<String>();
 			for(int i = 1; i <= numAgents; i++) {
 				participants.add("ag"+i);
@@ -64,8 +64,8 @@ public class AuctionAgent {
 	}
 	
 	
-	private ItemAuction[] getItems() throws IOException {
-		File file_count = new File("./src/AuctioneerData.txt");
+	private ItemAuction[] getItems(String filename) throws IOException {
+		File file_count = new File("./src/" + filename);
 		FileReader fileReader_count = new FileReader(file_count);
 		BufferedReader bufferedReader_count = new BufferedReader(fileReader_count);
 		int i = 0;
@@ -458,10 +458,11 @@ public class AuctionAgent {
 		String hostname = args[1];
 		int registryport = Integer.parseInt(args[2]);
 		int numAgents = Integer.parseInt(args[3]);
+		String filename = args[4];
 		try {
 			// instantiate an agent from this class
 
-			new AuctionAgent(agentname, hostname, registryport, numAgents);
+			new AuctionAgent(agentname, hostname, registryport, numAgents, filename);
 
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();

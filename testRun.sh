@@ -25,8 +25,8 @@ echo "Starting $1 Agents"
 for i in $(seq 1 $1)
 do
 	echo "Starting ag$i"
-	gnome-terminal -e "bash -c \"java -classpath ./src Agent ag$i localhost 50010; exec bash\""
+	gnome-terminal -e "bash -c \"java -classpath ./src Agent ag$i localhost 50010 $2; exec bash\""
 done
 
 echo "Starting Auctioneer"
-gnome-terminal -e "bash -c \"java -classpath ./src AuctionAgent auctioneer localhost 50010 $1; exec bash\""
+gnome-terminal -e "bash -c \"java -classpath ./src AuctionAgent auctioneer localhost 50010 $1 $3; exec bash\""
