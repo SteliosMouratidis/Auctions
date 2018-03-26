@@ -9,7 +9,7 @@
 
 4. Run the following command, [number of agents] is an integer value
 ```
-./testRun.sh [number of agents]
+./testRun.sh [number of agents] [Agent data file name (AgentData.txt)] [Auctioneer data file name (AuctioneerData.txt)]
 ```
   
   
@@ -42,11 +42,11 @@ Java -classpath ./src Mailbox 50010 50011
 
 6. Run the Agents: 
 ```
-Java -classpath ./src Agent [agentName (agX, X = integer)] localhost 50010
+Java -classpath ./src Agent [agentName (agX, X = integer)] localhost 50010 [data file name (AgentData.txt)]
 ```
 
 
 7. Run the Auctioneer:
 ```
-Java -classpath ./src AuctionAgent auctioneer  localhost 50010 [Number of agents (integer)]
+Java -classpath ./src AuctionAgent auctioneer  localhost 50010 [Number of agents (integer)] [data file name (AuctioneerData.txt)]
 ```
