@@ -17,10 +17,20 @@
 
 
 Note:
+The terminals can close upon completion of their processes e.g. when an agent loses or wins an auction.
 The following code in the testRun.sh file opens new terminal windows and pauses them on completion of the command to run the java file.
-This can be taken out to make terminals close on completion.
 ```
 bash -c \" ... exec bash\"
+```
+
+This line of code keeps the windows open
+```
+gnome-terminal -e "bash -c \"java -classpath ./src Agent ag$i localhost 50010 $2; exec bash\""
+```
+
+While this line closes them on completion
+```
+gnome-terminal -e "java -classpath ./src Agent ag$i localhost 50010 $2"
 ```
 
 
