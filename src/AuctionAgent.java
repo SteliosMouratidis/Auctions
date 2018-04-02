@@ -78,17 +78,19 @@ public class AuctionAgent {
 		ItemAuction[] itemArray = new ItemAuction[i];
 		fileReader_count.close();
 		
-		File file = new File("./src/AuctioneerData.txt");
+		File file = new File("./src/" + filename);
 		FileReader fileReader = new FileReader(file);
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
 		i = 0;
+		System.out.println("These are the goods I have to sell");
 		while ((line = bufferedReader.readLine()) != null) {
 			if(line.startsWith("auctioneer")) {  //if line is auctioneer item data
 				String[] attr = line.split(",");
 				itemArray[i] = new ItemAuction(attr[1], Integer.parseInt(attr[2]), 
 						Integer.parseInt(attr[3]), Integer.parseInt(attr[4]), Integer.parseInt(attr[5]));
-				System.out.println(attr[1] + Integer.parseInt(attr[2]) +
-						Integer.parseInt(attr[3])+ Integer.parseInt(attr[4])+ Integer.parseInt(attr[5]));
+				System.out.println(attr[1] + " " + Integer.parseInt(attr[2]) + " " + 
+						Integer.parseInt(attr[3])+ " " + Integer.parseInt(attr[4])+ 
+						" " + Integer.parseInt(attr[5]));
 				i += 1;
 			}
 		}
@@ -97,118 +99,145 @@ public class AuctionAgent {
 	}
 	
 
-	private void dutchProtocol(String myID, ArrayList<String> participants, ItemAuction[] items)
+	private void dutchProtocol(String myID, ArrayList<String> participants_orig, ItemAuction[] items)
 			throws IOException, InterruptedException {
 		// ===============================================
 		// Console input:
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
-		Message message = null;
-		String auctionType = null;
-		Integer currentAskingPrice = null;
-		ItemAuction currentItem = items[0];
-		ArrayList<Bid> currentBids = new ArrayList<Bid>();
+		//Message message = null;
+		//String auctionType = null;
+		//Integer currentAskingPrice = null;
+		//ItemAuction currentItem = items[0];
+		//ArrayList<Bid> currentBids = new ArrayList<Bid>();
 		int decrement = 5;
 
 		System.out.print("Start Auction, press return ");
-		//String command = in.readLine();
-
-		currentAskingPrice = currentItem.getStartingPrice();
-		// tell the agents the auction is starting
-		for (String participant : participants) {
-			message = new Message(Message.INFORM_START_OF_AUCTION, myID, participant, "dutch");
-			mailbox.send(message);
-			System.out.println("Inform Start of Dutch Auction");
-		}
-
-		// command = in.readLine(); //debug wait
-
-		// tell them the starting price
-		for (String participant : participants) {
-			message = new Message(Message.INFORM_ASKING_PRICE, myID, participant, currentItem.getItemID(),
-					currentItem.getStartingPrice());
-			mailbox.send(message);
-			System.out.println("Inform First Asking Price " + Integer.toString(currentItem.getStartingPrice()));
-		}
-		// wait for them to process the message and send something back
-		TimeUnit.SECONDS.sleep(2);
-
-		Boolean auction = true;
-		while (auction) {
-			ArrayList<Message> messages = new ArrayList<Message>(); // list of all messages
-
-			// receive messages from all agents
+		String command = in.readLine();
+		
+		
+		for (ItemAuction item: items) {
+			ItemAuction currentItem = item;
+			ArrayList<Bid> currentBids = new ArrayList<Bid>();
+			Message message = null;
+			String auctionType = null;
+			Integer currentAskingPrice = null;
+			ArrayList<String> participants = new ArrayList<String>(participants_orig);
+	
+			currentAskingPrice = currentItem.getStartingPrice();
+			// tell the agents the auction is starting
 			for (String participant : participants) {
-				message = mailbox.receive(myID);
-				if (message != null) {
-					messages.add(message);
-				}
+				message = new Message(Message.INFORM_START_OF_AUCTION, myID, participant, "dutch");
+				mailbox.send(message);
+				System.out.println("Inform Start of Dutch Auction");
 			}
-
-			Boolean onlyNoMessages = true;
-			for (Message msg : messages) {
-				if (msg.getMessageType() != 0) {
-					onlyNoMessages = false;
-				}
+	
+			// command = in.readLine(); //debug wait
+	
+			// tell them the starting price
+			for (String participant : participants) {
+				message = new Message(Message.INFORM_ASKING_PRICE, myID, participant, currentItem.getItemID(),
+						currentItem.getStartingPrice());
+				mailbox.send(message);
+				System.out.println("Inform First Asking Price " + Integer.toString(currentItem.getStartingPrice()));
 			}
-
-			System.out.println("Size of messages " + messages.size());
-			// for (Message msg : messages) {
-			// System.out.println("mt: " + msg.getMessageType());
-			// }
-
-			if (onlyNoMessages) { // if there only no message messages
-				currentAskingPrice = currentAskingPrice - decrement; // decrement price
-				// if still above reserve, inform asking price
-				if (currentAskingPrice >= currentItem.getReservePrice()) {
-					for (String participant : participants) {
-						message = new Message(Message.INFORM_ASKING_PRICE, myID, participant, currentItem.getItemID(),
-								currentAskingPrice);
-						mailbox.send(message);
-						System.out.println("Inform Asking Price " + Integer.toString(currentAskingPrice));
+			// wait for them to process the message and send something back
+			TimeUnit.SECONDS.sleep(2);
+	
+			Boolean auction = true;
+			while (auction) {
+				ArrayList<Message> messages = new ArrayList<Message>(); // list of all messages
+	
+				// receive messages from all agents
+				for (String participant : participants) {
+					message = mailbox.receive(myID);
+					if (message != null) {
+						messages.add(message);
 					}
 				}
-				// else inform everyone they lose
-				else {
-					auction = false;
-					for (String participant : participants) {
-						message = new Message(Message.INFORM_LOSER, myname, participant, currentItem.getItemID());
-						mailbox.send(message);
-						System.out.println("Inform Loser " + participant);
-					}
-					// end auction
-				}
-				TimeUnit.SECONDS.sleep(2);
-			}
-			// if there is at least 1 message accepting
-			else {
-				ArrayList<String> accepting = new ArrayList<String>(); // list of ids of people accepting same bid
-				// for each message, add people who accept this price to accepting list
+	
+				Boolean onlyNoMessages = true;
 				for (Message msg : messages) {
-					// System.out.println("in loop type: " + msg.getMessageType());
-					if (msg.getMessageType() == 7) {
-						accepting.add(msg.getSender());
+					if (msg.getMessageType() != 0) {
+						onlyNoMessages = false;
 					}
-					// else remove unnecessary messages
-					// else {
-					// messages.remove(msg);
-					// }
 				}
-				// System.out.println(accepting.size());
-				// System.out.println(accepting.get(0));
-
-				if (accepting.size() == 0) { // no real bids in messages
-					currentAskingPrice = currentAskingPrice - decrement;
+	
+				System.out.println("Size of messages " + messages.size());
+				// for (Message msg : messages) {
+				// System.out.println("mt: " + msg.getMessageType());
+				// }
+	
+				if (onlyNoMessages) { // if there only no message messages
+					currentAskingPrice = currentAskingPrice - decrement; // decrement price
+					// if still above reserve, inform asking price
 					if (currentAskingPrice >= currentItem.getReservePrice()) {
 						for (String participant : participants) {
-							message = new Message(Message.INFORM_ASKING_PRICE, myID, participant,
-									currentItem.getItemID(), currentAskingPrice);
+							message = new Message(Message.INFORM_ASKING_PRICE, myID, participant, currentItem.getItemID(),
+									currentAskingPrice);
 							mailbox.send(message);
 							System.out.println("Inform Asking Price " + Integer.toString(currentAskingPrice));
-							TimeUnit.SECONDS.sleep(2);
 						}
-					} else {
+					}
+					// else inform everyone they lose
+					else {
 						auction = false;
+						for (String participant : participants) {
+							message = new Message(Message.INFORM_LOSER, myname, participant, currentItem.getItemID());
+							mailbox.send(message);
+							System.out.println("Inform Loser " + participant);
+						}
+						// end auction
+					}
+					TimeUnit.SECONDS.sleep(2);
+				}
+				// if there is at least 1 message accepting
+				else {
+					ArrayList<String> accepting = new ArrayList<String>(); // list of ids of people accepting same bid
+					// for each message, add people who accept this price to accepting list
+					for (Message msg : messages) {
+						// System.out.println("in loop type: " + msg.getMessageType());
+						if (msg.getMessageType() == 7) {
+							accepting.add(msg.getSender());
+						}
+						// else remove unnecessary messages
+						// else {
+						// messages.remove(msg);
+						// }
+					}
+					// System.out.println(accepting.size());
+					// System.out.println(accepting.get(0));
+	
+					if (accepting.size() == 0) { // no real bids in messages
+						currentAskingPrice = currentAskingPrice - decrement;
+						if (currentAskingPrice >= currentItem.getReservePrice()) {
+							for (String participant : participants) {
+								message = new Message(Message.INFORM_ASKING_PRICE, myID, participant,
+										currentItem.getItemID(), currentAskingPrice);
+								mailbox.send(message);
+								System.out.println("Inform Asking Price " + Integer.toString(currentAskingPrice));
+								TimeUnit.SECONDS.sleep(2);
+							}
+						} else {
+							auction = false;
+							for (String participant : participants) {
+								message = new Message(Message.INFORM_LOSER, myID, participant, currentItem.getItemID());
+								mailbox.send(message);
+								System.out.println("Inform Loser " + participant);
+							}
+							// end auction
+						}
+					}
+					// if there's a real bid, and only one -> winner
+					else if (accepting.size() == 1) {
+						auction = false;
+						message = new Message(Message.INFORM_WINNER, myname, messages.get(0).getSender(),
+								currentItem.getItemID(), currentAskingPrice);
+						mailbox.send(message);
+						System.out.println("Inform Winner " + messages.get(0).getSender());
+						System.out.println("I made $" + (currentAskingPrice - currentItem.getReservePrice()) + " in profit");
+	
+						participants.remove(message.getReceiver()); // remove winner
 						for (String participant : participants) {
 							message = new Message(Message.INFORM_LOSER, myID, participant, currentItem.getItemID());
 							mailbox.send(message);
@@ -216,46 +245,29 @@ public class AuctionAgent {
 						}
 						// end auction
 					}
-				}
-				// if there's a real bid, and only one -> winner
-				else if (accepting.size() == 1) {
-					auction = false;
-					message = new Message(Message.INFORM_WINNER, myname, messages.get(0).getSender(),
-							currentItem.getItemID());
-					mailbox.send(message);
-					System.out.println("Inform Winner " + messages.get(0).getSender());
-					System.out.println("I made $" + (currentAskingPrice - currentItem.getReservePrice()) + " in profit");
-
-					participants.remove(message.getReceiver()); // remove winner
-					for (String participant : participants) {
-						message = new Message(Message.INFORM_LOSER, myID, participant, currentItem.getItemID());
-						mailbox.send(message);
-						System.out.println("Inform Loser " + participant);
-					}
-					// end auction
-				}
-				// if more than one bid for accepting the price
-				else if (accepting.size() > 1) {
-					auction = false; // end dutch auuction
-					ArrayList<String> englishAuctionParticipants = new ArrayList<String>();
-
-					for (String participant : accepting) {
-						message = new Message(Message.INFORM_START_OF_AUCTION, myID, participant, "english");
-						mailbox.send(message);
-						System.out.println("Inform Start of English Auction " + participant);
-						englishAuctionParticipants.add(participant);
-					}
-					
-					for (String participant : participants) {
-						if(!(accepting.contains(participant))){  //if not accepting, inform loser
-							message = new Message(Message.INFORM_LOSER, myID, participant, currentItem.getItemID());
+					// if more than one bid for accepting the price
+					else if (accepting.size() > 1) {
+						auction = false; // end dutch auuction
+						ArrayList<String> englishAuctionParticipants = new ArrayList<String>();
+	
+						for (String participant : accepting) {
+							message = new Message(Message.INFORM_START_OF_AUCTION, myID, participant, "english");
 							mailbox.send(message);
-							System.out.println("Inform Loser " + participant);
+							System.out.println("Inform Start of English Auction " + participant);
+							englishAuctionParticipants.add(participant);
 						}
+						
+						for (String participant : participants) {
+							if(!(accepting.contains(participant))){  //if not accepting, inform loser
+								message = new Message(Message.INFORM_LOSER, myID, participant, currentItem.getItemID());
+								mailbox.send(message);
+								System.out.println("Inform Loser " + participant);
+							}
+						}
+						TimeUnit.SECONDS.sleep(2);
+						// end auction, start english auction
+						englishProtocol(myID, currentItem, englishAuctionParticipants, currentAskingPrice);
 					}
-					TimeUnit.SECONDS.sleep(2);
-					// end auction, start english auction
-					englishProtocol(myID, currentItem, englishAuctionParticipants, currentAskingPrice);
 				}
 			}
 		}
@@ -296,7 +308,7 @@ public class AuctionAgent {
 				if (currentBid.getBidderID() == null) {
 					// just choose the first message for the winner
 					message = new Message(Message.INFORM_WINNER, myID, messages.get(0).getSender(),
-							currentItem.getItemID());
+							currentItem.getItemID(), currentAskingPrice);
 					mailbox.send(message);
 					System.out.println("Inform Winner " + messages.get(0).getSender());
 					System.out.println("I made $" + (currentBid.getBidPrice() - currentItem.getReservePrice()) + " in profit");
@@ -311,7 +323,7 @@ public class AuctionAgent {
 				// if no one wants to bid, end the auction, still have a current bid
 				else {
 					message = new Message(Message.INFORM_WINNER, myID, currentBid.getBidderID(),
-							currentItem.getItemID());
+							currentItem.getItemID(), currentAskingPrice);
 					mailbox.send(message);
 					System.out.println("Inform Winner " + messages.get(0).getSender());
 					System.out.println("I made $" + (currentBid.getBidPrice() - currentItem.getReservePrice()) + " in profit");
@@ -340,7 +352,7 @@ public class AuctionAgent {
 				if(messages.isEmpty()) {
 					auction = false;
 					message = new Message(Message.INFORM_WINNER, myID, currentBid.getBidderID(),
-							currentItem.getItemID());
+							currentItem.getItemID(), currentAskingPrice);
 					mailbox.send(message);
 					System.out.println("Inform Winner " + currentBid.getBidderID());
 					System.out.println("I made $" + (currentBid.getBidPrice() - currentItem.getReservePrice()) + " in profit");
