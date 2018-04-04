@@ -169,7 +169,7 @@ public class AuctionAgent {
 				// }
 	
 				if (onlyNoMessages) { // if there only no message messages
-					currentAskingPrice = currentAskingPrice - decrement; // decrement price
+					currentAskingPrice = currentAskingPrice - currentItem.getDecrement(); // decrement price
 					// if still above reserve, inform asking price
 					if (currentAskingPrice >= currentItem.getReservePrice()) {
 						for (String participant : participants) {
@@ -209,7 +209,7 @@ public class AuctionAgent {
 					// System.out.println(accepting.get(0));
 	
 					if (accepting.size() == 0) { // no real bids in messages
-						currentAskingPrice = currentAskingPrice - decrement;
+						currentAskingPrice = currentAskingPrice - currentItem.getDecrement();
 						if (currentAskingPrice >= currentItem.getReservePrice()) {
 							for (String participant : participants) {
 								message = new Message(Message.INFORM_ASKING_PRICE, myID, participant,
@@ -277,7 +277,7 @@ public class AuctionAgent {
 	private void englishProtocol(String myID, ItemAuction currentItem, ArrayList<String> participants,
 		Integer askingPrice, String bidder) throws IOException, InterruptedException {
 		int increment = 5;
-		int currentAskingPrice = askingPrice + currentItem.increment;  //initial increment
+		int currentAskingPrice = askingPrice + currentItem.getIncrement();  //initial increment
 		Bid currentBid = new Bid(bidder, currentAskingPrice);
 		Message message = null;
 		Boolean auction = true;
@@ -401,12 +401,12 @@ public class AuctionAgent {
 					
 					//send accept message to winner of current bid
 					message = new Message(Message.INFORM_ACCEPT, myID, currentBid.getBidderID(), currentItem.getItemID(), 
-							currentBid.getBidPrice(), currentBid.getBidPrice() + increment);
+							currentBid.getBidPrice(), currentBid.getBidPrice() + currentItem.getIncrement());
 					mailbox.send(message);
 					System.out.println("Inform Accept " + currentBid.getBidderID() + " at " + currentBid.getBidPrice());
 					
 					//increment the bid
-					currentBid.setBidPrice(currentBid.getBidPrice() + increment);
+					currentBid.setBidPrice(currentBid.getBidPrice() + currentItem.getIncrement());
 					System.out.println("Current Bid is " + currentBid.getBidPrice());
 					
 					for (String agent : rejectRecipients) {
@@ -440,11 +440,11 @@ public class AuctionAgent {
 
 					//send accept message to winner of current bid
 					message = new Message(Message.INFORM_ACCEPT, myID, currentBid.getBidderID(), currentItem.getItemID(), 
-							currentBid.getBidPrice(), currentBid.getBidPrice() + increment);
+							currentBid.getBidPrice(), currentBid.getBidPrice() + currentItem.getIncrement());
 					mailbox.send(message);
 					System.out.println("Inform Accept " + currentBid.getBidderID() + " at " + currentBid.getBidPrice());
 					
-					currentBid.setBidPrice(currentBid.getBidPrice() + increment);
+					currentBid.setBidPrice(currentBid.getBidPrice() + currentItem.getIncrement());
 					
 					for (String agent : rejectRecipients) {
 						message = new Message(Message.INFORM_ASKING_PRICE, myID, agent, currentItem.getItemID(),

@@ -1,0 +1,7 @@
+auctioneer,table,500,300,15,30
+#auctioneer,chair,300,200,10,20
+#auctioneer,desk,1000,500,20,50
+
+#Auctioneer Data
+#auctioneerName, itemName, initial asking price, reserve price, decrement value, increment value
+
