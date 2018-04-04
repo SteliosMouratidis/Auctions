@@ -1,0 +1,16 @@
+ag1,chair,130,145,5
+ag2,chair,130,150,5
+ag3,chair,135,150,5
+ag4,chair,130,145,5
+ag5,chair,135,155,5
+ag6,chair,135,140,5
+ag7,chair,130,145,5
+ag8,chair,130,145,5
+ag9,chair,130,145,5
+ag10,chair,130,145,5
+ag1,desk,50,145,5
+ag6,desk,50,140,5
+ag8,desk,50,145,5
+
+#Agent Data
+#agentName, itemName, price to accept the bid, max price to spend in english auction, increment value on proposed bid

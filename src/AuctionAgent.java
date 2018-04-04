@@ -266,7 +266,7 @@ public class AuctionAgent {
 						}
 						TimeUnit.SECONDS.sleep(2);
 						// end auction, start english auction
-						englishProtocol(myID, currentItem, englishAuctionParticipants, currentAskingPrice);
+						englishProtocol(myID, currentItem, englishAuctionParticipants, currentAskingPrice, accepting.get(0));
 					}
 				}
 			}
@@ -275,10 +275,10 @@ public class AuctionAgent {
 	}
 
 	private void englishProtocol(String myID, ItemAuction currentItem, ArrayList<String> participants,
-		Integer askingPrice) throws IOException, InterruptedException {
+		Integer askingPrice, String bidder) throws IOException, InterruptedException {
 		int increment = 5;
 		int currentAskingPrice = askingPrice + currentItem.increment;  //initial increment
-		Bid currentBid = new Bid(null, currentAskingPrice);
+		Bid currentBid = new Bid(bidder, currentAskingPrice);
 		Message message = null;
 		Boolean auction = true;
 
@@ -305,6 +305,7 @@ public class AuctionAgent {
 			// if no one wants to bid, end the auction
 			if (messages.isEmpty()) {
 				auction = false; // end auction
+				/*
 				if (currentBid.getBidderID() == null) {
 					// just choose the first message for the winner
 					message = new Message(Message.INFORM_WINNER, myID, messages.get(0).getSender(),
@@ -322,18 +323,21 @@ public class AuctionAgent {
 				}
 				// if no one wants to bid, end the auction, still have a current bid
 				else {
+				*/
 					message = new Message(Message.INFORM_WINNER, myID, currentBid.getBidderID(),
 							currentItem.getItemID(), currentAskingPrice);
 					mailbox.send(message);
-					System.out.println("Inform Winner " + messages.get(0).getSender());
+					System.out.println("Inform Winner " + currentBid.getBidderID());
 					System.out.println("I made $" + (currentBid.getBidPrice() - currentItem.getReservePrice()) + " in profit");
 					
 					for (String participant : participants) {
-						message = new Message(Message.INFORM_LOSER, myID, participant, currentItem.getItemID());
-						mailbox.send(message);
-						System.out.println("Inform Loser " + participant);
+						if(!(participant.equals(currentBid.getBidderID()))){
+							message = new Message(Message.INFORM_LOSER, myID, participant, currentItem.getItemID());
+							mailbox.send(message);
+							System.out.println("Inform Loser " + participant);
+						}
 					}
-				}
+				//}
 			}
 			// else someone wants to bid
 			else {

@@ -46,11 +46,7 @@ public class Agent {
 		// new Thread ( receiver = new Receiver( myname, mailbox ) ).start(); ;
 
 		try {
-			String auctioneerID = "auctioneer";
-			
-			//ItemAgent[] items = new ItemAgent[4];
-			//itemID, acceptPrice, maxPrice, increment
-			
+			String auctioneerID = "auctioneer";			
 			ItemAgent[] items = getItems(myname, filename);
 			
 			dutchProtocol(auctioneerID, myname, items);
@@ -102,10 +98,6 @@ public class Agent {
 		// ===============================================
 		// Console input:
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		//Message message = null;
-		//String auctionType = null;
-		//Integer currentAskingPrice = null;
-		//String currentItem = null;
 
 		while(true) {
 			Message message = null;
