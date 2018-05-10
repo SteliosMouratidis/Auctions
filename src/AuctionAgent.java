@@ -117,6 +117,7 @@ public class AuctionAgent {
 		
 		
 		for (ItemAuction item: items) {
+			System.out.println("Starting the auction...");
 			ItemAuction currentItem = item;
 			ArrayList<Bid> currentBids = new ArrayList<Bid>();
 			Message message = null;
@@ -205,8 +206,8 @@ public class AuctionAgent {
 						// messages.remove(msg);
 						// }
 					}
-					// System.out.println(accepting.size());
-					// System.out.println(accepting.get(0));
+					 //System.out.println(accepting.size());
+					 //System.out.println(accepting.get(0));
 	
 					if (accepting.size() == 0) { // no real bids in messages
 						currentAskingPrice = currentAskingPrice - currentItem.getDecrement();
@@ -231,10 +232,10 @@ public class AuctionAgent {
 					// if there's a real bid, and only one -> winner
 					else if (accepting.size() == 1) {
 						auction = false;
-						message = new Message(Message.INFORM_WINNER, myname, messages.get(0).getSender(),
+						message = new Message(Message.INFORM_WINNER, myname, accepting.get(0),
 								currentItem.getItemID(), currentAskingPrice);
 						mailbox.send(message);
-						System.out.println("Inform Winner " + messages.get(0).getSender());
+						System.out.println("Inform Winner " + accepting.get(0));
 						System.out.println("I made $" + (currentAskingPrice - currentItem.getReservePrice()) + " in profit");
 	
 						participants.remove(message.getReceiver()); // remove winner
@@ -270,6 +271,7 @@ public class AuctionAgent {
 					}
 				}
 			}
+			TimeUnit.SECONDS.sleep(5);
 		}
 		System.out.println(Integer.toString(mailbox.getNumberOfMessages()) + " Mesages were exchanged");
 	}

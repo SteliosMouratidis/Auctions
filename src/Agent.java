@@ -179,7 +179,7 @@ public class Agent {
 					//new asking price
 					currentAskingPrice = message.getAskingPrice();
 					currentItem = message.getItemID();
-					System.out.println(currentAskingPrice);
+					System.out.println("Price: " + currentAskingPrice);
 				} else if (message.getMessageType() == 1) { // inform start of auction
 					auction = false;  //stop this auction, time for english auction
 					englishProtocol(auctionID, myID, currentAskingPrice, currentItemStats);

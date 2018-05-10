@@ -1,0 +1,6 @@
+ag1,table,120,145,5
+ag2,table,120,150,5
+ag3,table,130,150,5
+ag1,chair,130,145,5
+ag2,chair,130,155,5
+ag3,chair,130,160,5
