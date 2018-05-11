@@ -1,4 +1,8 @@
 # Multi Agent Auction Simulation
+
+### Youtube Video Demo
+[![Auction Demo](https://img.youtube.com/vi/4X99rUrgx5Y/maxresdefault.jpg)](https://youtu.be/4X99rUrgx5Y "Multi-Agent Auction")
+
 ### Setup Instructions:
 1. Install java JDK
 2. Unzip the files to a local directory
