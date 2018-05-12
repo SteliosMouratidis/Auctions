@@ -1,11 +1,16 @@
 # Multi Agent Auction Simulation
 
+### Description
+Java implementation of a multi-agent auction simulation. Using the Java RMI interface, the agents representing the auctioneer and the bidders communicate through messages sent to and from a simulated mailbox using RMI. Each item the auctioneer wants to sell triggers a dutch auction, where the asking price is decreased until a bidder wishes to buy the item at the specified price. If more than one bidder bids at a specific price, this triggers an english auction where the bids increase until there are no new bids.
+
+The entire system is run using a bash script, specified for running in Ubuntu Linux. This script is very simple, as it opens new terminal windows for each component and agent necessary to run the auction. It starts the RMI registry, mailbox, buyer agents, and auctioneer agent in that order, each with separate processes that can be left open to view output or closed on completion of their processes. When everything is ready, the user must press enter on the auctioneer’s terminal window to start the auction. Each agent prints out statements that explain what it is doing during the whole auction process.
+
 ### Youtube Video Demo
 [![Auction Demo](https://img.youtube.com/vi/4X99rUrgx5Y/maxresdefault.jpg)](https://youtu.be/4X99rUrgx5Y "Multi-Agent Auction")
 
 ### Setup Instructions:
 1. Install java JDK
-2. Unzip the files to a local directory
+2. Download the repo and unzip the files to a local directory
 
 #### Ubuntu Linux
 
